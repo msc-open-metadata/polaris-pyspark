@@ -10,7 +10,8 @@ class PolarisXCatalog(Catalog):
         Custom Catalog for PolarisX that manages functions via PolarisXRestClient.
         """
         self.spark = spark
-        self.client = PolarisXRestClient(api_endpoint)
+        creds = spark.conf.get("spark.sql.catalog.polaris.credential")
+        self.client = PolarisXRestClient(api_endpoint, creds)
 
     def create_function(self, function_name: str, function_body: str):
         """
@@ -19,7 +20,7 @@ class PolarisXCatalog(Catalog):
         """
         payload = {"name": function_name, "body": function_body}
         try:
-            return self.client.post("/functions", payload)
+            return self.client.post("/management/v1/functions", payload)
         except requests.exceptions.RequestException as e:
             return {"error": str(e)}
 
@@ -29,7 +30,7 @@ class PolarisXCatalog(Catalog):
         Returns the API response.
         """
         try:
-            return self.client.get("/functions")
+            return self.client.get("/management/v1/functions")
         except requests.exceptions.RequestException as e:
             return {"error": str(e)}
 
